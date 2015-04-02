@@ -18,9 +18,8 @@ stop(_State) ->
 start_cowboy() ->
     Dispatch = cowboy_router:compile([
         {'_', [{"/", bm_handler_index, []},
-               {"/static/[...]", cowboy_static, {priv_dir, bm, "static/"}},
-               {"/metrics", bm_handler_metrics, []},
-               {"/metrics/:metric/", bm_handler_metric_data, []}
+               {"/static/[...]", cowboy_static, {dir, "priv/static/"}},
+               {"/ws", bm_ws_handler, []}
         ]}
     ]),
     CBHTTP = application:get_env(bm, http_port, 8080),

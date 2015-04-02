@@ -1,0 +1,19 @@
+{% extends "base.dtl" %}
+
+{% block sidebar %}
+{% verbatim %}
+
+    Should be some devices!
+
+{% endverbatim %}
+
+{% endblock %}
+
+{% block content %}
+{% verbatim %}
+
+    Should be some graphs!
+    <div id="container" style="width:100%; height:400px;"></div>
+
+{% endverbatim %}
+{% endblock %}
