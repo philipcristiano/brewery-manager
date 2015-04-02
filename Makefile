@@ -6,7 +6,6 @@ ELEVELDB_VERSION = "1.1.0"
 export ELEVELDB_VERSION
 
 SHELL_OPTS = -eval "application:ensure_all_started(bm)"
-SHELL_OPTS = -eval "bm_protocol_v1:start_link()."
 
 
 DEPS = leveltsdb cowboy jsx erlydtl

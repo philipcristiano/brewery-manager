@@ -13,7 +13,7 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/0]).
+-export([start_link/2]).
 
 %% gen_server callbacks
 -export([init/1,
@@ -36,8 +36,9 @@
 %% @spec start_link() -> {ok, Pid} | ignore | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
-start_link() ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+start_link(IP, Port) ->
+    io:format("Start link"),
+    gen_server:start_link({local, ?MODULE}, ?MODULE, [IP, Port], []).
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -54,9 +55,9 @@ start_link() ->
 %%                     {stop, Reason}
 %% @end
 %%--------------------------------------------------------------------
-init([]) ->
+init([IP, Port]) ->
     io:format("start"),
-    {ok, Sock} = gen_tcp:connect({192,168,1,140}, 23, [binary, {packet, line}, {active, true}],30000),
+    {ok, Sock} = gen_tcp:connect(IP, Port, [binary, {packet, line}, {active, true}],30000),
 
     io:format("connect"),
     %ok = gen_tcp:close(Sock),
@@ -123,10 +124,11 @@ handle_proto_device({_Port, Msg}, State) ->
 
 handle_proto_tempterature({_Port, Msg}, #state{device_id=ID}=State) ->
     Topic = {bm_temperature, ID},
-    [ProbeNum, TempS] = binary:split(Msg),
+    [ProbeNum, TempS] = string:tokens(Msg, ": "),
+    Temp = etsdb_numbers:to_float(TempS),
     pg2:create(Topic),
     Pids = pg2:get_members(Topic),
-    send(Pids, temperature, {ProbeNum, TempS}),
+    send(Pids, temperature, {ProbeNum, Temp}),
     {noreply, State}.
 
 %%--------------------------------------------------------------------

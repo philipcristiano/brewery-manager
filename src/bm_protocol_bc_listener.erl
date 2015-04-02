@@ -103,6 +103,17 @@ handle_cast(_Msg, State) ->
 %%                                   {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
+handle_info({udp, _Port, IP, _FromPort, _Msg}, State) ->
+    io:format("I am connecting to ~p~n", [IP]),
+    Spec = {{device, IP},
+              {bm_protocol_v1, start_link, [IP, 23]},
+               temporary, 5000, worker, [bm_protocol_v1]},
+    {ok, _Pid} = case supervisor:start_child(bm_sup_connections, Spec) of
+        {ok, P} -> {ok, P};
+        {error, {already_started, P}} -> {ok, P}
+    end,
+    io:format(" Should start...\n"),
+    {noreply, State};
 handle_info(Info, State) ->
     io:format("info ~p~n", [Info]),
     {noreply, State}.
