@@ -12,6 +12,8 @@
 
 -behaviour(gen_server).
 
+-compile({parse_transform, lager_transform}).
+
 %% API
 -export([start_link/0]).
 
@@ -55,10 +57,10 @@ start_link() ->
 %% @end
 %%--------------------------------------------------------------------
 init([]) ->
-    io:format("start"),
+    lager:info("start udp listener"),
     {ok, Sock} = gen_udp:open(8989, [binary, {active, true}]),
 
-    io:format("udp listener started"),
+    lager:info("udp listener started"),
     %ok = gen_tcp:close(Sock),
     {ok, #state{socket=Sock}}.
 
@@ -104,7 +106,7 @@ handle_cast(_Msg, State) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_info({udp, _Port, IP, _FromPort, _Msg}, State) ->
-    io:format("I am connecting to ~p~n", [IP]),
+    lager:info("I am connecting to ~p~n", [IP]),
     Spec = {{device, IP},
               {bm_protocol_v1, start_link, [IP, 23]},
                temporary, 5000, worker, [bm_protocol_v1]},
@@ -112,10 +114,10 @@ handle_info({udp, _Port, IP, _FromPort, _Msg}, State) ->
         {ok, P} -> {ok, P};
         {error, {already_started, P}} -> {ok, P}
     end,
-    io:format(" Should start...\n"),
+    lager:info(" Should start...\n"),
     {noreply, State};
 handle_info(Info, State) ->
-    io:format("info ~p~n", [Info]),
+    lager:info("info ~p~n", [Info]),
     {noreply, State}.
 
 %%--------------------------------------------------------------------
