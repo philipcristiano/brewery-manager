@@ -56,7 +56,7 @@ $( document ).ready(function() {
         },
         series: [{
             name: 'Live Temperature Data',
-            data: []
+            data: [],
         }]
     });
 
@@ -64,11 +64,16 @@ $( document ).ready(function() {
     socket.onmessage = function(event) {
       var message = JSON.parse(event.data);
       console.log(message.data);
-    //// prepend("<p>" + message + "</p>");
-      var point = [new Date().getTime(), parseFloat(message.data) ];
-      var shift = hchart.series[0].data.length > 10;
-      console.log(shift);
-      hchart.series[0].addPoint(point, true, shift);
+      var num = parseFloat(message.data);
+      if (!isNaN(num)) {
+          var point = {x: new Date().getTime(), y: parseFloat(message.data)};
+          var shift = hchart.series[0].data.length >= 1000;
+          //hchart.series[0].addPoint(point, true, false);
+          var series = hchart.series[0];
+          var x = (new Date()).getTime(); // current time
+          series.addPoint(point, true, shift, true);
+          hchart.redraw();
+      }
     };
 
 })});
