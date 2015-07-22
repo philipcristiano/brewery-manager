@@ -123,12 +123,8 @@ handle_proto_device({_Port, Msg}, State) ->
     {noreply, NewState}.
 
 handle_proto_tempterature({_Port, Msg}, #state{device_id=ID}=State) ->
-    Topic = {bm_temperature, ID},
-    [ProbeNum, TempS] = string:tokens(Msg, ": "),
-    Temp = etsdb_numbers:to_float(TempS),
-    pg2:create(Topic),
-    Pids = pg2:get_members(Topic),
-    send(Pids, temperature, {ProbeNum, Temp}),
+    [_ProbeNum, TempS] = string:tokens(Msg, ": "),
+    bm_publish_metrics:publish_temperature(ID, TempS),
     {noreply, State}.
 
 %%--------------------------------------------------------------------
@@ -159,11 +155,6 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
-send([], _Name, _Msg) ->
-    ok;
-send([Pid|Pids], Name, Msg) ->
-    Pid ! {pipe, Name, Msg},
-    send(Pids, Name, Msg).
 
 strip(S, []) ->
     S;

@@ -7,8 +7,13 @@
 start(_Type, _Args) ->
 	{ok, Pid} = bm_sup:start_link(),
     GPPORT = application:get_env(bm, graphite_port, 2003),
-    {ok, _RanchPid} = ranch:start_listener(graphite_input, 1,
+    {ok, _} = ranch:start_listener(graphite_input, 1,
         ranch_tcp, [{port, GPPORT}], bm_graphite_protocol, []),
+    TCPPORT = application:get_env(bm, tcp_port, 7645),
+
+    {ok, _} = ranch:start_listener(tcp_input, 1,
+        ranch_tcp, [{port, TCPPORT}], bm_tcp_protocol, []),
+
     start_cowboy(),
     {ok, Pid}.
 
