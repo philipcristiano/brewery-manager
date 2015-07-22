@@ -1,6 +1,7 @@
 $(function () {
 $( document ).ready(function() {
     var socket = new WebSocket('ws://localhost:8080/ws');
+    var series = [];
 
     socket.onopen = function(event) {
       console.log("Open!");
@@ -16,8 +17,6 @@ $( document ).ready(function() {
     $('#container').highcharts({
         chart: {
             type: 'spline',
-            animation: Highcharts.svg, // don't animate in old IE
-            marginRight: 10,
             events: {
                 load: function () {
                     hchart = this;
@@ -28,31 +27,34 @@ $( document ).ready(function() {
             text: 'Live random data'
         },
         xAxis: {
-            type: 'datetime',
-            tickPixelInterval: 1000
+            type: 'datetime'
+            //tickPixelInterval: 100
         },
         yAxis: {
             title: {
-                text: 'Value'
-            },
-            plotLines: [{
-                value: 0,
-                width: 1,
-                color: '#808080'
-            }]
-        },
-        tooltip: {
-            formatter: function () {
-                return '<b>' + this.series.name + '</b><br/>' +
-                    Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
-                    Highcharts.numberFormat(this.y, 2);
+                text: 'Temperature'
             }
+            //plotLines: [{
+            //    value: 0,
+            //    width: 1,
+            //    color: '#808080'
+            //}]
         },
-        legend: {
-            enabled: false
-        },
-        exporting: {
-            enabled: false
+        //tooltip: {
+        //    formatter: function () {
+        //        return '<b>' + this.series.name + '</b><br/>' +
+        //            Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+        //            Highcharts.numberFormat(this.y, 2);
+        //    }
+        //},
+        //legend: {
+        //    enabled: false
+        //},
+        //exporting: {
+        //    enabled: false
+        //},
+        rangeSelector: {
+            selected: 1,
         },
         series: [{
             name: 'Live Temperature Data',
