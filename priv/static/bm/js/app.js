@@ -14,14 +14,18 @@ $( document ).ready(function() {
         }
     });
 
-    $('#container').highcharts({
+    $('#container').highcharts('StockChart', {
+        rangeSelector: {
+            enabled: true,
+            inputDateFormat: '%Y-%m-%d'
+        },
         chart: {
             type: 'spline',
             events: {
                 load: function () {
                     hchart = this;
                 }
-            }
+            },
         },
         title: {
             text: 'Live random data'
@@ -34,27 +38,6 @@ $( document ).ready(function() {
             title: {
                 text: 'Temperature'
             }
-            //plotLines: [{
-            //    value: 0,
-            //    width: 1,
-            //    color: '#808080'
-            //}]
-        },
-        //tooltip: {
-        //    formatter: function () {
-        //        return '<b>' + this.series.name + '</b><br/>' +
-        //            Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
-        //            Highcharts.numberFormat(this.y, 2);
-        //    }
-        //},
-        //legend: {
-        //    enabled: false
-        //},
-        //exporting: {
-        //    enabled: false
-        //},
-        rangeSelector: {
-            selected: 1,
         },
         series: [{
             name: 'Live Temperature Data',
