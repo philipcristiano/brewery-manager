@@ -9,6 +9,7 @@ $( document ).ready(function() {
     };
 
     var devices = [];
+    var device_map = {};
     rivets.bind($('#devices'), {devices: devices});
     var hchart;
     Highcharts.setOptions({
@@ -86,23 +87,19 @@ $( document ).ready(function() {
         };
         if (message.type === 'groups') {
             console.log(message.data);
-            var contains_group = false;
-            for (var i=0; i<devices.length; i++) {
-                console.log(devices[i].id);
-                if (devices[i].id === message.data.bm_devices) {
-                    contains_group = true;
-                }
-            };
-            if (!contains_group) {
-                devices.push({
-                    'id': message.data.bm_devices,
+            device_id = message.data.bm_devices;
+            if (device_map[device_id] === undefined) {
+                device = {
+                    'id': device_id,
                     'enabled': false,
                     'enable_changed': function() {
                         console.log('Changed!');
                         console.log(message.data.bm_devices);
                         socket.send(JSON.stringify({"type": "membership", "data": devices}));
                     },
-                });
+                };
+                device_map[device_id] = device;
+                devices.push(device);
             }
         };
 
