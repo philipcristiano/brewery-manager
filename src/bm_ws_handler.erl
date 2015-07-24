@@ -48,7 +48,7 @@ sync_membership([Group | Groups]) ->
 
 websocket_init(_TransportName, Req, _Opts) ->
 	% erlang:start_timer(1000, self(), <<"Hello!">>),
-    self() ! {send_groups},
+    self() ! send_groups,
 	{ok, Req, undefined_state}.
 
 %% Handle messages from client
@@ -67,12 +67,12 @@ handle_client_msg(<<"membership">>, Data) ->
     ok.
 
 %% Handle messages from VM
-websocket_info({send_groups}, Req, State) ->
+websocket_info(send_groups, Req, State) ->
     Groups = pg2:which_groups(),
     lager:debug("Found groups: ~p~n", [Groups]),
-    Msg = [{type, groups}, {data, Groups}],
+    Msg = [{type, groups}, {data, pg_groups_to_json(Groups)}],
     lager:debug("Encoding message: ~p~n", [Msg]),
-    timer:send_after(5000, {send_groups}),
+    timer:send_after(5000, send_groups),
     {reply, {text, jsx:encode(Msg)}, Req, State};
 websocket_info({pipe, Pipe, {_Key, Msg}}, Req, State) ->
     Send = [{type, event}, {pipe, [Pipe]}, {data, Msg}],
@@ -87,3 +87,8 @@ websocket_info(_Info, Req, State) ->
 
 websocket_terminate(_Reason, _Req, _State) ->
 	ok.
+
+pg_groups_to_json([]) ->
+    [];
+pg_groups_to_json([{bm_devices, Name}|Groups]) ->
+    [Name | pg_groups_to_json(Groups)].

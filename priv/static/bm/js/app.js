@@ -87,19 +87,23 @@ $( document ).ready(function() {
         };
         if (message.type === 'groups') {
             console.log(message.data);
-            device_id = message.data.bm_devices;
-            if (device_map[device_id] === undefined) {
-                device = {
-                    'id': device_id,
-                    'enabled': false,
-                    'enable_changed': function() {
-                        console.log('Changed!');
-                        console.log(message.data.bm_devices);
-                        socket.send(JSON.stringify({"type": "membership", "data": devices}));
-                    },
-                };
-                device_map[device_id] = device;
-                devices.push(device);
+            var num_device_ids = message.data.length;
+            for (var i=0; i < num_device_ids; i++) {
+                device_id = message.data[i];
+                console.log(device_id);
+                if (device_map[device_id] === undefined) {
+                    device = {
+                        'id': device_id,
+                        'enabled': false,
+                        'enable_changed': function() {
+                            console.log('Changed!');
+                            console.log(message.data.bm_devices);
+                            socket.send(JSON.stringify({"type": "membership", "data": devices}));
+                        },
+                    };
+                    device_map[device_id] = device;
+                    devices.push(device);
+                }
             }
         };
 
