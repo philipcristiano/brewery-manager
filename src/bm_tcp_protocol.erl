@@ -60,11 +60,12 @@ parse_line(Line, State) ->
 
 handle_message(<<"device">>, [DeviceID], State) ->
     {ok, State#state{device=DeviceID}};
-handle_message(<<"temperature (c)">>, [Sensor, Value], State) ->
+handle_message(<<"temperature (c)">>, [Sensor, Value], State=#state{device=Device}) ->
     lager:debug("Temp State: ~p~n", [State]),
-    bm_publish_metrics:publish_temperature(Sensor, Value),
+    Now = get_timestamp(),
+    bm_publish_metrics:publish_temperature(Device, Sensor, Now, Value),
     {ok, State}.
 
-%% get_timestamp() ->
-%%   {Mega, Sec, _Micro} = os:timestamp(),
-%%   (Mega*1000000 + Sec).
+get_timestamp() ->
+  {Mega, Sec, _Micro} = os:timestamp(),
+  (Mega*1000000 + Sec).

@@ -74,10 +74,13 @@ $( document ).ready(function() {
     socket.onmessage = function(event) {
       var message = JSON.parse(event.data);
       console.log(message.data);
-      var num = parseFloat(message.data);
+      var num = message.data.value;
+      console.log(num);
+
       if (!isNaN(num)) {
-          var point = {x: new Date().getTime(), y: parseFloat(message.data)};
-          var shift = hchart.series[0].data.length >= 1000;
+          console.log('adding');
+          var point = {x: new Date().getTime(), y: parseFloat(num)};
+          var shift = hchart.series[0].data.length >= 10;
           //hchart.series[0].addPoint(point, true, false);
           var series = hchart.series[0];
           var x = (new Date()).getTime(); // current time

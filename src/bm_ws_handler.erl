@@ -69,6 +69,10 @@ websocket_info({pipe, Pipe, {_Key, Msg}}, Req, State) ->
     Send = [{type, event}, {pipe, [Pipe]}, {data, Msg}],
     lager:debug("Sending: ~p~n", [Send]),
     {reply, {text, jsx:encode(Send)}, Req, State};
+websocket_info({pipe, Pipe, Data}, Req, State) ->
+    Send = [{type, event}, {pipe, [Pipe]}, {data, Data}],
+    lager:debug("Sending: ~p~n", [Data]),
+    {reply, {text, jsx:encode(Send)}, Req, State};
 websocket_info(_Info, Req, State) ->
 	{ok, Req, State}.
 
