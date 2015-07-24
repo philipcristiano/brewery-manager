@@ -66,6 +66,7 @@ $( document ).ready(function() {
         series: [{
             name: 'Live Temperature Data',
             data: [],
+            turboThreshold: 0,
         }]
     });
 
