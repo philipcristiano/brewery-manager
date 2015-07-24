@@ -8,7 +8,7 @@
 
 publish_temperature(ID, Temp) ->
     T = etsdb_numbers:to_float(Temp),
-    Topic = {bm_temperature, ID},
+    Topic = {bm_devices, ID},
     pg2:create(Topic),
     Pids = pg2:get_members(Topic),
     send(Pids, temperature, {ID, T}).
@@ -16,7 +16,7 @@ publish_temperature(ID, Temp) ->
 publish_temperature(Device, Sensor, TS, Temp) ->
     lager:debug("Publishing temperature ~p~n", [{Device, Sensor, TS, Temp}]),
     T = etsdb_numbers:to_float(Temp),
-    Topic = {bm_temperature, Device},
+    Topic = {bm_devices, Device},
     pg2:create(Topic),
     Pids = pg2:get_members(Topic),
 

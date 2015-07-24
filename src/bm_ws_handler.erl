@@ -15,8 +15,8 @@ init({tcp, http}, _Req, _Opts) ->
 
 join([]) ->
     ok;
-join([{bm_temperature, Name}|T]) ->
-    pg2:join({bm_temperature, Name}, self()),
+join([{bm_devices, Name}|T]) ->
+    pg2:join({bm_devices, Name}, self()),
     join(T);
 join([_H|T]) ->
     join(T).
@@ -62,6 +62,7 @@ websocket_handle({text, String}, Req, State) ->
 websocket_info({send_groups}, Req, State) ->
     Groups = pg2:which_groups(),
     join(Groups),
+    lager:debug("Found groups: ~p~n", [Groups]),
     Msg = [{type, groups}, {data, Groups}],
     lager:debug("Encoding message: ~p~n", [Msg]),
     {reply, {text, jsx:encode(Msg)}, Req, State};

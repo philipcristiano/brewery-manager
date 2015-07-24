@@ -3,7 +3,14 @@
 {% block sidebar %}
 {% verbatim %}
 
-    Should be some devices!
+    <div id="devices">
+        <ul>
+          <li rv-each-device="devices">
+            <input type="checkbox" rv-checked="device.enabled">
+            <span>{ device.id }</span>
+          </li>
+        <ul>
+    </div>
 
 {% endverbatim %}
 

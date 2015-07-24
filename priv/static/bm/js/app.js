@@ -7,6 +7,9 @@ $( document ).ready(function() {
       console.log("Open!");
       socket.send("{}");
     };
+
+    var devices = [];
+    rivets.bind($('#devices'), {devices: devices});
     var hchart;
     Highcharts.setOptions({
         global: {
@@ -73,19 +76,17 @@ $( document ).ready(function() {
     // Handle messages sent by the server.
     socket.onmessage = function(event) {
       var message = JSON.parse(event.data);
-      console.log(message.data);
-      var num = message.data.value;
-      console.log(num);
-
-      if (!isNaN(num)) {
-          console.log('adding');
+      if (message.type === 'event') {
+          var num = message.data.value;
           var point = {x: new Date().getTime(), y: parseFloat(num)};
-          var shift = hchart.series[0].data.length >= 10;
-          //hchart.series[0].addPoint(point, true, false);
           var series = hchart.series[0];
           var x = (new Date()).getTime(); // current time
-          series.addPoint(point, true, shift, true);
+          series.addPoint(point, true, false, true);
           hchart.redraw();
+      }
+      if (message.type === 'groups') {
+          console.log(message.data);
+          devices.push({'id': message.data.bm_devices, 'enabled': false});
       }
     };
 
