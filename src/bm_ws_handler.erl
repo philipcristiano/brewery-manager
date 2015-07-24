@@ -1,6 +1,8 @@
 -module(bm_ws_handler).
 -behaviour(cowboy_websocket_handler).
 
+-compile([{parse_transform, lager_transform}]).
+
 -export([init/3]).
 -export([websocket_init/3]).
 -export([websocket_handle/3]).
@@ -61,10 +63,11 @@ websocket_info({send_groups}, Req, State) ->
     Groups = pg2:which_groups(),
     join(Groups),
     Msg = [{type, groups}, {data, Groups}],
+    lager:debug("Encoding message: ~p~n", [Msg]),
     {reply, {text, jsx:encode(Msg)}, Req, State};
 websocket_info({pipe, Pipe, {_Key, Msg}}, Req, State) ->
     Send = [{type, event}, {pipe, [Pipe]}, {data, Msg}],
-    io:format("Sending: ~p~n", [Send]),
+    lager:debug("Sending: ~p~n", [Send]),
     {reply, {text, jsx:encode(Send)}, Req, State};
 websocket_info(_Info, Req, State) ->
 	{ok, Req, State}.
