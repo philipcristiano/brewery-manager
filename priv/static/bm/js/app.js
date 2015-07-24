@@ -75,19 +75,37 @@ $( document ).ready(function() {
 
     // Handle messages sent by the server.
     socket.onmessage = function(event) {
-      var message = JSON.parse(event.data);
-      if (message.type === 'event') {
-          var num = message.data.value;
-          var point = {x: new Date().getTime(), y: parseFloat(num)};
-          var series = hchart.series[0];
-          var x = (new Date()).getTime(); // current time
-          series.addPoint(point, true, false, true);
-          hchart.redraw();
-      }
-      if (message.type === 'groups') {
-          console.log(message.data);
-          devices.push({'id': message.data.bm_devices, 'enabled': false});
-      }
-    };
+        var message = JSON.parse(event.data);
+        if (message.type === 'event') {
+            var num = message.data.value;
+            var point = {x: new Date().getTime(), y: parseFloat(num)};
+            var series = hchart.series[0];
+            var x = (new Date()).getTime(); // current time
+            series.addPoint(point, true, false, true);
+            hchart.redraw();
+        };
+        if (message.type === 'groups') {
+            console.log(message.data);
+            var contains_group = false;
+            for (var i=0; i<devices.length; i++) {
+                console.log(devices[i].id);
+                if (devices[i].id === message.data.bm_devices) {
+                    contains_group = true;
+                }
+            };
+            if (!contains_group) {
+                devices.push({
+                    'id': message.data.bm_devices,
+                    'enabled': false,
+                    'enable_changed': function() {
+                        console.log('Changed!');
+                        console.log(message.data.bm_devices);
+                        socket.send(JSON.stringify({"type": "membership", "data": devices}));
+                    },
+                });
+            }
+        };
+
+    }
 
 })});

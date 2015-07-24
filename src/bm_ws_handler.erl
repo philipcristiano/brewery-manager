@@ -21,27 +21,28 @@ join([{bm_devices, Name}|T]) ->
 join([_H|T]) ->
     join(T).
 
-%join_once(Group) ->
-%    io:format("Join: ~p~n", [Group]),
-%    Members = pg2:get_members(Group),
-%    case lists:member(self(), Members) of
-%        true -> ok;
-%        false -> pg2:join(Group, self())
-%    end.
+join_once(Group) ->
+    io:format("Join: ~p~n", [Group]),
 
-%sync_membership([]) ->
-%    ok;
-%sync_membership([Group | Groups]) ->
-%    join([]),
-%    Name = {bm_publisher, proplists:get_value(<<"id">>, Group)},
-%    Selected = proplists:get_value(<<"selected">>, Group, false),
-%    case Selected of
-%        true -> join_once(Name);
-%        _ -> io:format("Leave: ~p~n", [Name]),
-%             pg2:leave(Name, self())
-%    end,
-%    sync_membership(Groups).
-%
+    Members = pg2:get_members(Group),
+    case lists:member(self(), Members) of
+        true -> ok;
+        false -> pg2:join(Group, self())
+    end.
+
+sync_membership([]) ->
+    ok;
+sync_membership([Group | Groups]) ->
+    join([]),
+    Name = {bm_devices, proplists:get_value(<<"id">>, Group)},
+    Selected = proplists:get_value(<<"enabled">>, Group, false),
+    case Selected of
+        true -> join_once(Name);
+        _ -> io:format("Leave: ~p~n", [Name]),
+             pg2:leave(Name, self())
+    end,
+    sync_membership(Groups).
+
 %groups_to_proplists(Groups) ->
 %    [[{id, ID}] || {_, ID} <- Groups].
 
@@ -55,16 +56,23 @@ websocket_handle({text, String}, Req, State) ->
     io:format("Message: ~p~n", [String]),
     Data = jsx:decode(String),
     io:format("Data: ~p~n", [Data]),
-    %sync_membership(proplists:get_value(<<"data">>, Data)),
+    handle_client_msg(proplists:get_value(<<"type">>, Data, unknown), Data),
 	{ok, Req, State}.
+
+handle_client_msg(unknown, Data) ->
+    lager:debug("Unknown client command: ~p~n", Data);
+handle_client_msg(<<"membership">>, Data) ->
+    lager:debug("Syncing membership: ~p~n", Data),
+    sync_membership(proplists:get_value(<<"data">>, Data)),
+    ok.
 
 %% Handle messages from VM
 websocket_info({send_groups}, Req, State) ->
     Groups = pg2:which_groups(),
-    join(Groups),
     lager:debug("Found groups: ~p~n", [Groups]),
     Msg = [{type, groups}, {data, Groups}],
     lager:debug("Encoding message: ~p~n", [Msg]),
+    timer:send_after(5000, {send_groups}),
     {reply, {text, jsx:encode(Msg)}, Req, State};
 websocket_info({pipe, Pipe, {_Key, Msg}}, Req, State) ->
     Send = [{type, event}, {pipe, [Pipe]}, {data, Msg}],

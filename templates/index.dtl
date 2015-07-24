@@ -6,7 +6,7 @@
     <div id="devices">
         <ul>
           <li rv-each-device="devices">
-            <input type="checkbox" rv-checked="device.enabled">
+            <input type="checkbox" rv-checked="device.enabled", rv-on-click="device.enable_changed">
             <span>{ device.id }</span>
           </li>
         <ul>
