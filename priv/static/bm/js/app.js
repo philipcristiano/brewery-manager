@@ -17,7 +17,31 @@ $( document ).ready(function() {
     $('#container').highcharts('StockChart', {
         rangeSelector: {
             enabled: true,
-            inputDateFormat: '%Y-%m-%d'
+            inputDateFormat: '%Y-%m-%d',
+            buttons: [{
+                type: 'minute',
+                count: 1,
+                text: '1m'
+            }, {
+                type: 'minute',
+                count: 3,
+                text: '5m'
+            }, {
+                type: 'minute',
+                count: 6,
+                text: '15m'
+            }, {
+                type: 'minute',
+                count: 60,
+                text: '60m'
+            }, {
+                type: 'day',
+                count: 1,
+                text: '1d'
+            }, {
+                type: 'all',
+                text: 'All'
+            }],
         },
         chart: {
             type: 'spline',
