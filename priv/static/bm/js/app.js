@@ -66,11 +66,6 @@ $( document ).ready(function() {
                 text: 'Temperature'
             }
         },
-        series: [{
-            name: 'Live Temperature Data',
-            data: [],
-            turboThreshold: 0,
-        }]
     });
 
     // Handle messages sent by the server.
@@ -79,18 +74,15 @@ $( document ).ready(function() {
         if (message.type === 'event') {
             var num = message.data.value;
             var point = {x: new Date().getTime(), y: parseFloat(num)};
-            var series = hchart.series[0];
-            series.addPoint(point, true, false, true);
+            device_map[message.data.device].addPoint(point);
             hchart.redraw();
         };
         if (message.type === 'groups') {
-            console.log(message.data);
             var num_device_ids = message.data.length;
             for (var i=0; i < num_device_ids; i++) {
                 device_id = message.data[i];
-                console.log(device_id);
                 if (device_map[device_id] === undefined) {
-                    device = new Device(device_id, socket);
+                    device = new Device(device_id, socket, hchart);
                     device_map[device_id] = device;
                     devices.push(device);
                 }
@@ -102,20 +94,27 @@ $( document ).ready(function() {
 })});
 
 
-function Device(id, socket) {
+function Device(id, socket, chart) {
     var device = this;
     this.id = id;
     this.enabled = false;
+    this.series = undefined;
 
     this.enable_changed = function() {
-        console.log(id);
-        console.log(device);
         var repr = {
             "id": id,
-            "foo": "bar",
             "enabled": device.enabled,
         };
         socket.send(JSON.stringify({"type": "membership", "data": [repr]}));
     };
+
+    this.addPoint = function(point) {
+        if (device.series === undefined) {
+            device.series = chart.addSeries({name: device.id,
+                                             turboThreshold: 0});
+        }
+        device.series.addPoint(point, true, false, true);
+
+    }
 
 }
