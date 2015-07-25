@@ -92,15 +92,7 @@ $( document ).ready(function() {
                 device_id = message.data[i];
                 console.log(device_id);
                 if (device_map[device_id] === undefined) {
-                    device = {
-                        'id': device_id,
-                        'enabled': false,
-                        'enable_changed': function() {
-                            console.log('Changed!');
-                            console.log(message.data.bm_devices);
-                            socket.send(JSON.stringify({"type": "membership", "data": devices}));
-                        },
-                    };
+                    device = new Device(device_id, socket);
                     device_map[device_id] = device;
                     devices.push(device);
                 }
@@ -110,3 +102,22 @@ $( document ).ready(function() {
     }
 
 })});
+
+
+function Device(id, socket) {
+    var device = this;
+    this.id = id;
+    this.enabled = false;
+
+    this.enable_changed = function() {
+        console.log(id);
+        console.log(device);
+        var repr = {
+            "id": id,
+            "foo": "bar",
+            "enabled": device.enabled,
+        };
+        socket.send(JSON.stringify({"type": "membership", "data": [repr]}));
+    };
+
+}
