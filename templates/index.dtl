@@ -8,6 +8,10 @@
           <li rv-each-device="devices">
             <input type="checkbox" rv-checked="device.enabled", rv-on-click="device.enable_changed">
             <span>{ device.id }</span>
+            <ul>
+                <li rv-each-sensor="device.sensors">
+                <span>{sensor.id}</span>
+            <ul>
           </li>
         <ul>
     </div>

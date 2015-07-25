@@ -74,7 +74,7 @@ $( document ).ready(function() {
         if (message.type === 'event') {
             var num = message.data.value;
             var point = {x: new Date().getTime(), y: parseFloat(num)};
-            device_map[message.data.device].addPoint(point);
+            device_map[message.data.device].addPoint(message.data.sensor, point);
             hchart.redraw();
         };
         if (message.type === 'groups') {
@@ -99,6 +99,8 @@ function Device(id, socket, chart) {
     this.id = id;
     this.enabled = false;
     this.series = undefined;
+    this.sensors = [];
+    this.sensor_map = {}
 
     this.enable_changed = function() {
         var repr = {
@@ -108,13 +110,29 @@ function Device(id, socket, chart) {
         socket.send(JSON.stringify({"type": "membership", "data": [repr]}));
     };
 
-    this.addPoint = function(point) {
-        if (device.series === undefined) {
-            device.series = chart.addSeries({name: device.id,
-                                             turboThreshold: 0});
+    this.addPoint = function(sensor_id, point) {
+        if (device.sensor_map[sensor_id] === undefined) {
+            console.log('New sensor!');
+            var sensor = new Sensor(sensor_id, socket, chart);
+            device.sensor_map[sensor_id] = sensor;
+            device.sensors.push(sensor);
         }
-        device.series.addPoint(point, true, false, true);
-
+        device.sensor_map[sensor_id].addPoint(point);
     }
 
+}
+
+function Sensor(id, socket, chart) {
+   var sensor = this;
+   this.id = id
+   this.series = undefined;
+
+   this.addPoint = function(point) {
+       if (sensor.series === undefined) {
+           sensor.series = chart.addSeries({name: sensor.id,
+                                            turboThreshold: 0});
+       }
+       sensor.series.addPoint(point, true, false, true);
+
+   }
 }
