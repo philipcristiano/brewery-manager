@@ -123,16 +123,18 @@ function Device(id, socket, chart) {
 }
 
 function Sensor(id, socket, chart) {
-   var sensor = this;
-   this.id = id
-   this.series = undefined;
+    var sensor = this;
+    this.id = id
+    this.series = undefined;
+    this.last_value = undefined;
 
-   this.addPoint = function(point) {
-       if (sensor.series === undefined) {
-           sensor.series = chart.addSeries({name: sensor.id,
-                                            turboThreshold: 0});
-       }
-       sensor.series.addPoint(point, true, false, true);
+    this.addPoint = function(point) {
+        sensor.last_value = point.y;
+        if (sensor.series === undefined) {
+            sensor.series = chart.addSeries({name: sensor.id,
+                                             turboThreshold: 0});
+        }
+        sensor.series.addPoint(point, true, false, true);
 
-   }
+    }
 }

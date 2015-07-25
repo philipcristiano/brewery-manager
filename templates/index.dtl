@@ -10,7 +10,7 @@
             <span>{ device.id }</span>
             <ul>
                 <li rv-each-sensor="device.sensors">
-                <span>{sensor.id}</span>
+                <span>{sensor.id} - {sensor.last_value}</span>
             <ul>
           </li>
         <ul>
