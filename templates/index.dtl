@@ -11,7 +11,11 @@
             <ul>
                 <li rv-each-sensor="device.sensors">
                 <span>{sensor.id} - {sensor.last_value}</span>
+            </ul>
             <ul>
+                <li rv-each-settable="device.settables">
+                <span>{settable.group} - {settable.parameter}</span>
+            </ul>
           </li>
         <ul>
     </div>

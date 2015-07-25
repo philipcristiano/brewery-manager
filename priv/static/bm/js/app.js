@@ -77,6 +77,10 @@ $( document ).ready(function() {
             device_map[message.data.device].addPoint(message.data.sensor, point);
             hchart.redraw();
         };
+        if (message.type === 'settable') {
+            device_map[message.data.device].addSettable(message.data.group,
+                                                        message.data.parameter);
+        };
         if (message.type === 'groups') {
             var num_device_ids = message.data.length;
             for (var i=0; i < num_device_ids; i++) {
@@ -101,6 +105,8 @@ function Device(id, socket, chart) {
     this.series = undefined;
     this.sensors = [];
     this.sensor_map = {}
+    this.settables = [];
+    this.settable_map = {}
 
     this.enable_changed = function() {
         var repr = {
@@ -112,18 +118,28 @@ function Device(id, socket, chart) {
 
     this.addPoint = function(sensor_id, point) {
         if (device.sensor_map[sensor_id] === undefined) {
-            console.log('New sensor!');
-            var sensor = new Sensor(sensor_id, socket, chart);
+            var sensor = new Sensor(device, sensor_id, socket, chart);
             device.sensor_map[sensor_id] = sensor;
             device.sensors.push(sensor);
         }
         device.sensor_map[sensor_id].addPoint(point);
     }
 
+    this.addSettable = function(group, parameter) {
+        var id = group + parameter;
+        if (device.settable_map[id] === undefined) {
+            var settable = new Settable(device, group, parameter, socket, chart);
+            device.settable_map[id] = settable;
+            device.settables.push(settable);
+        }
+        device.settable_map[id].currentValue(group, parameter);
+    }
+
 }
 
-function Sensor(id, socket, chart) {
+function Sensor(device, id, socket, chart) {
     var sensor = this;
+    this.device = device;
     this.id = id
     this.series = undefined;
     this.last_value = undefined;
@@ -131,10 +147,23 @@ function Sensor(id, socket, chart) {
     this.addPoint = function(point) {
         sensor.last_value = point.y;
         if (sensor.series === undefined) {
-            sensor.series = chart.addSeries({name: sensor.id,
+            sensor.series = chart.addSeries({name: this.device.id + ' - ' + sensor.id,
                                              turboThreshold: 0});
         }
         sensor.series.addPoint(point, true, false, true);
 
+    }
+}
+
+function Settable(device, group, parameter, socket, chart) {
+    var sensor = this;
+    this.device = device;
+    this.group = group;
+    this.parameter = parameter;
+    this.socket = socket;
+    this.chart = chart;
+
+    this.currentValue = function(group, parameter) {
+        console.log("You should set this", group, parameter);
     }
 }

@@ -3,7 +3,8 @@
 -compile([{parse_transform, lager_transform}]).
 
 -export([publish_temperature/2,
-         publish_temperature/4]).
+         publish_temperature/4,
+         settable_parameter/3]).
 
 
 publish_temperature(ID, Temp) ->
@@ -11,7 +12,7 @@ publish_temperature(ID, Temp) ->
     Topic = {bm_devices, ID},
     pg2:create(Topic),
     Pids = pg2:get_members(Topic),
-    send(Pids, temperature, {ID, T}).
+    send(pipe, Pids, temperature, {ID, T}).
 
 publish_temperature(Device, Sensor, TS, Temp) ->
     lager:debug("Publishing temperature ~p~n", [{Device, Sensor, TS, Temp}]),
@@ -25,10 +26,23 @@ publish_temperature(Device, Sensor, TS, Temp) ->
             {<<"value">>, T},
             {<<"timestamp">>, TS}],
 
-    send(Pids, temperature, Data).
+    send(pipe, Pids, temperature, Data).
 
-send([], _Name, _Msg) ->
+settable_parameter(Device, Group, Parameter) ->
+    lager:debug("Publishing settable ~p~n", [{Device, Group, Parameter}]),
+    Topic = {bm_devices, Device},
+    pg2:create(Topic),
+    Pids = pg2:get_members(Topic),
+
+    Data = [{<<"device">>, Device},
+            {<<"group">>, Group},
+            {<<"parameter">>, Parameter}],
+
+    send(settable, Pids, temperature, Data).
+
+
+send(_Type, [], _Name, _Msg) ->
     ok;
-send([Pid|Pids], Name, Msg) ->
-    Pid ! {pipe, Name, Msg},
-    send(Pids, Name, Msg).
+send(Type, [Pid|Pids], Name, Msg) ->
+    Pid ! {Type, Name, Msg},
+    send(Type, Pids, Name, Msg).
