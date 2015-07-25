@@ -80,7 +80,6 @@ $( document ).ready(function() {
             var num = message.data.value;
             var point = {x: new Date().getTime(), y: parseFloat(num)};
             var series = hchart.series[0];
-            var x = (new Date()).getTime(); // current time
             series.addPoint(point, true, false, true);
             hchart.redraw();
         };
