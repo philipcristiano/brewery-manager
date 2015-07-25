@@ -5,7 +5,6 @@ $( document ).ready(function() {
 
     socket.onopen = function(event) {
       console.log("Open!");
-      socket.send("{}");
     };
 
     var devices = [];
