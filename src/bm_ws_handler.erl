@@ -8,6 +8,7 @@
 -export([websocket_handle/3]).
 -export([websocket_info/3]).
 -export([websocket_terminate/3]).
+-export([delete_by_value/2]).
 
 -record(state, {device_pids}).
 
