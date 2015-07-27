@@ -126,9 +126,7 @@ pg_groups_to_json([{bm_devices, Name}|Groups]) ->
 
 delete_by_value(_Val, []) ->
     [];
-delete_by_value(_Val, [[]]) ->
-    [];
-delete_by_value(Val, [{_Head, Val}|Rest]) ->
-    [delete_by_value(Val, Rest)];
+delete_by_value(Val, [{_, Val}|Rest]) ->
+    delete_by_value(Val, Rest);
 delete_by_value(Val, [{Head, Val2}|Rest]) ->
-    [{Head, Val2}, delete_by_value(Val, Rest)].
+    [{Head, Val2}| delete_by_value(Val, Rest)].
