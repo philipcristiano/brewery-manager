@@ -9,6 +9,8 @@
 -export([websocket_info/3]).
 -export([websocket_terminate/3]).
 
+-record(state, {device_pids}).
+
 init({tcp, http}, _Req, _Opts) ->
     % join_all(),
 	{upgrade, protocol, cowboy_websocket}.
@@ -49,22 +51,34 @@ sync_membership([Group | Groups]) ->
 websocket_init(_TransportName, Req, _Opts) ->
 	% erlang:start_timer(1000, self(), <<"Hello!">>),
     self() ! send_groups,
-	{ok, Req, undefined_state}.
+	{ok, Req, #state{device_pids=[]}}.
 
 %% Handle messages from client
 websocket_handle({text, String}, Req, State) ->
     io:format("Message: ~p~n", [String]),
     Data = jsx:decode(String),
     io:format("Data: ~p~n", [Data]),
-    handle_client_msg(proplists:get_value(<<"type">>, Data, unknown), Data),
+    handle_client_msg(proplists:get_value(<<"type">>, Data, unknown), Data, State),
 	{ok, Req, State}.
 
-handle_client_msg(unknown, Data) ->
+handle_client_msg(unknown, Data, _State) ->
     lager:debug("Unknown client command: ~p~n", Data);
-handle_client_msg(<<"membership">>, Data) ->
+handle_client_msg(<<"set">>, Data, _State=#state{device_pids=Pids}) ->
+    Device = proplists:get_value(<<"device">>, Data),
+    Pid = proplists:get_value(Device, Pids),
+
+    Group = proplists:get_value(<<"group">>, Data),
+    Param = proplists:get_value(<<"parameter">>, Data),
+    Value = proplists:get_value(<<"value">>, Data),
+
+    lager:debug("Setting settable: ~p~n", [Data]),
+    bm_tcp_protocol:set_settable(Pid, Device, Group, Param, Value);
+handle_client_msg(<<"membership">>, Data, _State) ->
     lager:debug("Syncing membership: ~p~n", Data),
     sync_membership(proplists:get_value(<<"data">>, Data)),
-    ok.
+    ok;
+handle_client_msg(Type, Data, _State) ->
+    lager:debug("Unknown client command: ~p~p~n", [Type, Data]).
 
 %% Handle messages from VM
 websocket_info(send_groups, Req, State) ->
@@ -82,10 +96,16 @@ websocket_info({pipe, Pipe, Data}, Req, State) ->
     Send = [{type, event}, {pipe, [Pipe]}, {data, Data}],
     lager:debug("Sending: ~p~n", [Data]),
     {reply, {text, jsx:encode(Send)}, Req, State};
-websocket_info({settable, Name, Msg}, Req, State) ->
+websocket_info({settable, Name, {From, Msg}}, Req, State=#state{device_pids=Pids}) ->
+    Device = proplists:get_value(<<"device">>, Msg),
+    Pids2 = case proplists:is_defined(Device, Pids)  of
+                false -> erlang:monitor(process, From),
+                         [{Device, From} | Pids];
+                _ -> Pids
+    end,
     Send = [{type, settable}, {pipe, [Name]}, {data, Msg}],
     lager:debug("Sending: ~p~n", [Msg]),
-    {reply, {text, jsx:encode(Send)}, Req, State};
+    {reply, {text, jsx:encode(Send)}, Req, State#state{device_pids=Pids2}};
 websocket_info(_Info, Req, State) ->
 	{ok, Req, State}.
 

@@ -4,7 +4,8 @@
 -compile([{parse_transform, lager_transform}]).
 
 -export([start_link/4]).
--export([init/4]).
+-export([init/4,
+         set_settable/5]).
 
 -record(state, {buffer, device=undef}).
 
@@ -17,16 +18,26 @@ init(Ref, Socket, Transport, _Opts = []) ->
 	ok = ranch:accept_ack(Ref),
 	loop(Socket, Transport, #state{buffer = <<"">>}).
 
+set_settable(Pid, Device, Group, Parameter, Value) ->
+    lager:debug("Protocol set value ~p~n", [{Device, Group, Parameter, Value}]),
+    Pid ! {set, {Device, Group, Parameter, Value}}.
+
 loop(Socket, Transport, State) ->
     lager:debug("Loop state ~p~n", [State]),
-	case Transport:recv(Socket, 0, 3600000) of
-		{ok, Data} ->
+    {OK, Closed, Error} = Transport:messages(),
+    Transport:setopts(Socket, [{active, once}]),
+    receive
+        {OK, Socket, Data} ->
             {ok, NewState} = handle_data(Data, State),
 			loop(Socket, Transport, NewState);
-		A ->
-            lager:debug("Graphite huh? ~p~n", [A]),
-			ok = Transport:close(Socket)
-	end.
+        {Closed, Socket} ->
+            io:format("socket got closed!~n");
+        {Error, Socket, Reason} ->
+            io:format("error happened: ~p~n", [Reason]);
+        {set, {Device, Group, Parameter, Value}} ->
+            lager:debug("Protocol set value ~p~n", [{Device, Group, Parameter, Value}]),
+            loop(Socket, Transport, State)
+    end.
 
 handle_data(NewData, State=#state{buffer=Buffer}) ->
     lager:debug("Handle data: ~p~n", [NewData]),
@@ -67,7 +78,7 @@ handle_message(<<"temperature (c)">>, [Sensor, Value], State=#state{device=Devic
     {ok, State};
 handle_message(<<"settable">>, [Group, Parameter], State=#state{device=Device}) ->
     lager:debug("settable State: ~p~n", [State]),
-    bm_publish_metrics:settable_parameter(Device, Group, Parameter),
+    bm_publish_metrics:settable_parameter(self(), Device, Group, Parameter),
     {ok, State};
 handle_message(Unknown, Data, State) ->
     lager:info("TCP protocol receiving unknown message ~p, ~p ~n", [Unknown, Data]),

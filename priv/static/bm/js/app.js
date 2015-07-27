@@ -168,6 +168,12 @@ function Settable(device, group, parameter, socket, chart) {
     }
 
     this.set = function() {
-        console.log($('#' + settable.id).val());
+        var val = $('#' + settable.id).val()
+        console.log(val);
+        socket.send(JSON.stringify({"type": "set",
+                                    "device": settable.device.id,
+                                    "group": settable.group,
+                                    "parameter": settable.parameter,
+                                    "value": val}));
     }
 }
