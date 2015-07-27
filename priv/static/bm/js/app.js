@@ -157,7 +157,7 @@ function Sensor(device, id, socket, chart) {
 
 function Settable(device, group, parameter, socket, chart) {
     var settable = this;
-    this.id = group + "-" + parameter;
+    this.id = device.id + '-' + group + "-" + parameter;
     this.device = device;
     this.group = group;
     this.parameter = parameter;
