@@ -106,7 +106,13 @@ websocket_info({settable, Name, {From, Msg}}, Req, State=#state{device_pids=Pids
     Send = [{type, settable}, {pipe, [Name]}, {data, Msg}],
     lager:debug("Sending: ~p~n", [Msg]),
     {reply, {text, jsx:encode(Send)}, Req, State#state{device_pids=Pids2}};
-websocket_info(_Info, Req, State) ->
+websocket_info({'DOWN', _MonitorRef, process, Pid, _Info}, Req, State=#state{device_pids=Pids}) ->
+    lager:debug("Monitor down pids ~p~n", [Pids]),
+    NewPids = delete_by_value(Pid, Pids),
+    lager:debug("Monitor down new pids ~p~n", [NewPids]),
+	{ok, Req, State#state{device_pids=NewPids}};
+websocket_info(Info, Req, State) ->
+    lager:info("Websocket unhandled message: ~p~n", [Info]),
 	{ok, Req, State}.
 
 websocket_terminate(_Reason, _Req, _State) ->
@@ -116,3 +122,12 @@ pg_groups_to_json([]) ->
     [];
 pg_groups_to_json([{bm_devices, Name}|Groups]) ->
     [Name | pg_groups_to_json(Groups)].
+
+delete_by_value(_Val, []) ->
+    [];
+delete_by_value(_Val, [[]]) ->
+    [];
+delete_by_value(Val, [{_Head, Val}|Rest]) ->
+    [delete_by_value(Val, Rest)];
+delete_by_value(Val, [{Head, Val2}|Rest]) ->
+    [{Head, Val2}, delete_by_value(Val, Rest)].

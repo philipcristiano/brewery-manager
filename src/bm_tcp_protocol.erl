@@ -35,7 +35,9 @@ loop(Socket, Transport, State) ->
         {Error, Socket, Reason} ->
             io:format("error happened: ~p~n", [Reason]);
         {set, {Device, Group, Parameter, Value}} ->
-            lager:debug("Protocol set value ~p~n", [{Device, Group, Parameter, Value}]),
+            lager:debug("Protocol sending value ~p~n", [{Device, Group, Parameter, Value}]),
+            Msg = [<<"set:">>, Group, <<":">>, Parameter, <<":">>, Value, "\n"],
+            Transport:send(Socket, Msg),
             loop(Socket, Transport, State)
     end.
 
