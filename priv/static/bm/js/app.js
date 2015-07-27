@@ -156,7 +156,8 @@ function Sensor(device, id, socket, chart) {
 }
 
 function Settable(device, group, parameter, socket, chart) {
-    var sensor = this;
+    var settable = this;
+    this.id = group + "-" + parameter;
     this.device = device;
     this.group = group;
     this.parameter = parameter;
@@ -164,6 +165,9 @@ function Settable(device, group, parameter, socket, chart) {
     this.chart = chart;
 
     this.currentValue = function(group, parameter) {
-        console.log("You should set this", group, parameter);
+    }
+
+    this.set = function() {
+        console.log($('#' + settable.id).val());
     }
 }

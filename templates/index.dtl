@@ -14,7 +14,10 @@
             </ul>
             <ul>
                 <li rv-each-settable="device.settables">
-                <span>{settable.group} - {settable.parameter}</span>
+                <span>{settable.group} - {settable.parameter}
+                      <input rv-id="settable.id" type="text">
+                      <input type="submit" rv-on-click="settable.set"
+                </span>
             </ul>
           </li>
         <ul>
