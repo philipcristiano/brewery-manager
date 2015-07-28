@@ -3,7 +3,25 @@
 {% block sidebar %}
 {% verbatim %}
 
-    Should be some devices!
+    <div id="devices">
+        <ul>
+          <li rv-each-device="devices">
+            <input type="checkbox" rv-checked="device.enabled", rv-on-click="device.enable_changed">
+            <span>{ device.id }</span>
+            <ul>
+                <li rv-each-sensor="device.sensors">
+                <span>{sensor.id} - {sensor.last_value}</span>
+            </ul>
+            <ul>
+                <li rv-each-settable="device.settables">
+                <span>{settable.group} - {settable.parameter} - {settable.value}
+                      <input rv-id="settable.id" type="text">
+                      <input type="submit" rv-on-click="settable.set"
+                </span>
+            </ul>
+          </li>
+        <ul>
+    </div>
 
 {% endverbatim %}
 

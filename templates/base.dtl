@@ -60,6 +60,7 @@
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="/static/bootstrap-3.2.0/js/bootstrap.min.js"></script>
     <script src="/static/highstock-2.1.7/js/highstock.js"></script>
+    <script src="/static/rivets-0.8.0/rivets.bundled.min.js"></script>
     <script src="/static/bm/js/app.js"></script>
   </body>
 </html>
