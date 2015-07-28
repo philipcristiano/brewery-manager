@@ -78,9 +78,9 @@ handle_message(<<"temperature (c)">>, [Sensor, Value], State=#state{device=Devic
     Now = get_timestamp(),
     bm_publish_metrics:publish_temperature(Device, Sensor, Now, Value),
     {ok, State};
-handle_message(<<"settable">>, [Group, Parameter], State=#state{device=Device}) ->
+handle_message(<<"settable">>, [Group, Parameter, Value], State=#state{device=Device}) ->
     lager:debug("settable State: ~p~n", [State]),
-    bm_publish_metrics:settable_parameter(self(), Device, Group, Parameter),
+    bm_publish_metrics:settable_parameter(self(), Device, Group, Parameter, Value),
     {ok, State};
 handle_message(Unknown, Data, State) ->
     lager:info("TCP protocol receiving unknown message ~p, ~p ~n", [Unknown, Data]),

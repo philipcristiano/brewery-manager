@@ -4,7 +4,7 @@
 
 -export([publish_temperature/2,
          publish_temperature/4,
-         settable_parameter/4]).
+         settable_parameter/5]).
 
 
 publish_temperature(ID, Temp) ->
@@ -28,14 +28,15 @@ publish_temperature(Device, Sensor, TS, Temp) ->
 
     send(pipe, Pids, temperature, Data).
 
-settable_parameter(From, Device, Group, Parameter) ->
-    lager:debug("Publishing settable ~p~n", [{Device, Group, Parameter}]),
+settable_parameter(From, Device, Group, Parameter, Value) ->
+    lager:debug("Publishing settable ~p~n", [{Device, Group, Parameter, Value}]),
     Topic = {bm_devices, Device},
     pg2:create(Topic),
     Pids = pg2:get_members(Topic),
 
     Data = [{<<"device">>, Device},
             {<<"group">>, Group},
+            {<<"value">>, Value},
             {<<"parameter">>, Parameter}],
 
     send(settable, Pids, temperature, {From, Data}).

@@ -79,7 +79,8 @@ $( document ).ready(function() {
         };
         if (message.type === 'settable') {
             device_map[message.data.device].addSettable(message.data.group,
-                                                        message.data.parameter);
+                                                        message.data.parameter,
+                                                        message.data.value);
         };
         if (message.type === 'groups') {
             var num_device_ids = message.data.length;
@@ -125,14 +126,14 @@ function Device(id, socket, chart) {
         device.sensor_map[sensor_id].addPoint(point);
     }
 
-    this.addSettable = function(group, parameter) {
+    this.addSettable = function(group, parameter, value) {
         var id = group + parameter;
         if (device.settable_map[id] === undefined) {
             var settable = new Settable(device, group, parameter, socket, chart);
             device.settable_map[id] = settable;
             device.settables.push(settable);
         }
-        device.settable_map[id].currentValue(group, parameter);
+        device.settable_map[id].currentValue(value);
     }
 
 }
@@ -164,7 +165,8 @@ function Settable(device, group, parameter, socket, chart) {
     this.socket = socket;
     this.chart = chart;
 
-    this.currentValue = function(group, parameter) {
+    this.currentValue = function(value) {
+        settable.value = value;
     }
 
     this.set = function() {
