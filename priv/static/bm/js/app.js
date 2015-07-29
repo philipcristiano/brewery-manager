@@ -1,12 +1,8 @@
 $(function () {
 $( document ).ready(function() {
-    var socket = new WebSocket('ws://localhost:8080/ws');
+    var socket = new WSWrapper('ws://localhost:8080/ws');
+
     var series = [];
-
-    socket.onopen = function(event) {
-      console.log("Open!");
-    };
-
     var devices = [];
     var device_map = {};
     rivets.bind($('#devices'), {devices: devices});
@@ -69,7 +65,7 @@ $( document ).ready(function() {
     });
 
     // Handle messages sent by the server.
-    socket.onmessage = function(event) {
+    socket.sock.onmessage = function(event) {
         var message = JSON.parse(event.data);
         if (message.type === 'event') {
             var num = message.data.value;
@@ -178,4 +174,28 @@ function Settable(device, group, parameter, socket, chart) {
                                     "parameter": settable.parameter,
                                     "value": val}));
     }
+}
+
+function WSWrapper(URL) {
+    var wsw = this;
+    this.url = URL;
+    this.sock = undefined;
+    this.handlers =
+
+    this.send = function(data) {
+        wsw.sock.send(data);
+    }
+
+    this.connect = function() {
+        wsw.sock = new WebSocket(URL);
+        wsw.sock.onopen = function(event) {
+          console.log("Open!");
+        }
+        wsw.sock.onclose = function(event) {
+          console.log("Close :(");
+        }
+
+    }
+
+    this.connect();
 }
