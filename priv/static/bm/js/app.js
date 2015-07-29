@@ -189,6 +189,7 @@ function WSWrapper(URL) {
         }
         wsw.sock.onclose = function(event) {
           console.log("Close :(");
+          window.setTimeout(wsw.connect, 1000);
         }
         wsw.sock.onmessage = function(event) {
             var message = JSON.parse(event.data);
