@@ -65,32 +65,28 @@ $( document ).ready(function() {
     });
 
     // Handle messages sent by the server.
-    socket.sock.onmessage = function(event) {
-        var message = JSON.parse(event.data);
-        if (message.type === 'event') {
-            var num = message.data.value;
-            var point = {x: new Date().getTime(), y: parseFloat(num)};
-            device_map[message.data.device].addPoint(message.data.sensor, point);
-            hchart.redraw();
-        };
-        if (message.type === 'settable') {
-            device_map[message.data.device].addSettable(message.data.group,
-                                                        message.data.parameter,
-                                                        message.data.value);
-        };
-        if (message.type === 'groups') {
-            var num_device_ids = message.data.length;
-            for (var i=0; i < num_device_ids; i++) {
-                device_id = message.data[i];
-                if (device_map[device_id] === undefined) {
-                    device = new Device(device_id, socket, hchart);
-                    device_map[device_id] = device;
-                    devices.push(device);
-                }
+    socket.setHandler('event', function(message) {
+        var num = message.data.value;
+        var point = {x: new Date().getTime(), y: parseFloat(num)};
+        device_map[message.data.device].addPoint(message.data.sensor, point);
+        hchart.redraw();
+    });
+    socket.setHandler('settable', function(message) {
+        device_map[message.data.device].addSettable(message.data.group,
+                                                    message.data.parameter,
+                                                    message.data.value);
+    });
+    socket.setHandler('groups', function(message) {
+        var num_device_ids = message.data.length;
+        for (var i=0; i < num_device_ids; i++) {
+            device_id = message.data[i];
+            if (device_map[device_id] === undefined) {
+                device = new Device(device_id, socket, hchart);
+                device_map[device_id] = device;
+                devices.push(device);
             }
-        };
-
-    }
+        }
+    });
 
 })});
 
@@ -180,7 +176,7 @@ function WSWrapper(URL) {
     var wsw = this;
     this.url = URL;
     this.sock = undefined;
-    this.handlers =
+    this.handlers = {};
 
     this.send = function(data) {
         wsw.sock.send(data);
@@ -194,7 +190,21 @@ function WSWrapper(URL) {
         wsw.sock.onclose = function(event) {
           console.log("Close :(");
         }
+        wsw.sock.onmessage = function(event) {
+            var message = JSON.parse(event.data);
+            var type = message.type;
+            var handler = wsw.handlers[type];
+            if (handler === undefined) {
+                console.log("No handler for ", type);
+            } else {
+                handler(message);
+            }
+        }
 
+    }
+
+    this.setHandler = function(type, handler) {
+        wsw.handlers[type] = handler;
     }
 
     this.connect();
