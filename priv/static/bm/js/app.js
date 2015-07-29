@@ -102,11 +102,7 @@ function Device(id, socket, chart) {
     this.settable_map = {}
 
     this.enable_changed = function() {
-        var repr = {
-            "id": id,
-            "enabled": device.enabled,
-        };
-        socket.send(JSON.stringify({"type": "membership", "data": [repr]}));
+        socket.group_membership(id, device.enabled);
     };
 
     this.addPoint = function(sensor_id, point) {
@@ -177,6 +173,7 @@ function WSWrapper(URL) {
     this.url = URL;
     this.sock = undefined;
     this.handlers = {};
+    this.groups = {};
 
     this.send = function(data) {
         wsw.sock.send(data);
@@ -186,6 +183,9 @@ function WSWrapper(URL) {
         wsw.sock = new WebSocket(URL);
         wsw.sock.onopen = function(event) {
           console.log("Open!");
+          for (device_id in wsw.groups) {
+              wsw.send_group_membership(device_id, wsw.groups[device_id])
+          }
         }
         wsw.sock.onclose = function(event) {
           console.log("Close :(");
@@ -202,6 +202,16 @@ function WSWrapper(URL) {
             }
         }
 
+    }
+
+    this.group_membership = function(device_id, enabled) {
+        wsw.groups[device_id] = enabled;
+        wsw.send_group_membership(device_id, enabled);
+    }
+
+    this.send_group_membership = function(device_id, enabled) {
+        var repr = [{"id": device_id, "enabled": enabled}];
+        wsw.sock.send(JSON.stringify({"type": "membership", "data": repr}));
     }
 
     this.setHandler = function(type, handler) {
