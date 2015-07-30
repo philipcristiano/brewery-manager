@@ -14,7 +14,7 @@ start(_Type, _Args) ->
     {ok, _} = ranch:start_listener(tcp_input, 1,
         ranch_tcp, [{port, TCPPORT}], bm_tcp_protocol, []),
 
-    start_cowboy(),
+    {ok, _} = start_cowboy(),
     {ok, Pid}.
 
 stop(_State) ->

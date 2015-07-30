@@ -16,14 +16,6 @@ init({tcp, http}, _Req, _Opts) ->
     % join_all(),
 	{upgrade, protocol, cowboy_websocket}.
 
-join([]) ->
-    ok;
-join([{bm_devices, Name}|T]) ->
-    pg2:join({bm_devices, Name}, self()),
-    join(T);
-join([_H|T]) ->
-    join(T).
-
 join_once(Group) ->
     io:format("Join: ~p~n", [Group]),
 
@@ -36,13 +28,12 @@ join_once(Group) ->
 sync_membership([]) ->
     ok;
 sync_membership([Group | Groups]) ->
-    join([]),
     Name = {bm_devices, proplists:get_value(<<"id">>, Group)},
     Selected = proplists:get_value(<<"enabled">>, Group, false),
-    case Selected of
-        true -> join_once(Name);
-        _ -> io:format("Leave: ~p~n", [Name]),
-             pg2:leave(Name, self())
+    ok = case Selected of
+            true -> join_once(Name);
+            _ -> io:format("Leave: ~p~n", [Name]),
+                 pg2:leave(Name, self())
     end,
     sync_membership(Groups).
 
@@ -87,7 +78,7 @@ websocket_info(send_groups, Req, State) ->
     lager:debug("Found groups: ~p~n", [Groups]),
     Msg = [{type, groups}, {data, pg_groups_to_json(Groups)}],
     lager:debug("Encoding message: ~p~n", [Msg]),
-    timer:send_after(5000, send_groups),
+    {ok, _} = timer:send_after(5000, send_groups),
     {reply, {text, jsx:encode(Msg)}, Req, State};
 websocket_info({pipe, Pipe, {_Key, Msg}}, Req, State) ->
     Send = [{type, event}, {pipe, [Pipe]}, {data, Msg}],
