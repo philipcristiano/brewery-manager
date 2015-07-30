@@ -6,7 +6,7 @@ ELEVELDB_VERSION = "1.1.0"
 export ELEVELDB_VERSION
 
 SHELL_OPTS = -eval "application:ensure_all_started(bm)" -config bm
-
+PLT_APPS = ranch
 
 DEPS = leveltsdb cowboy jsx erlydtl emqttc
 dep_leveltsdb = git https://github.com/philipcristiano/leveltsdb.git 0.1.4
