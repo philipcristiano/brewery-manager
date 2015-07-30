@@ -1,12 +1,8 @@
 $(function () {
 $( document ).ready(function() {
-    var socket = new WebSocket('ws://localhost:8080/ws');
+    var socket = new WSWrapper('ws://localhost:8080/ws');
+
     var series = [];
-
-    socket.onopen = function(event) {
-      console.log("Open!");
-    };
-
     var devices = [];
     var device_map = {};
     rivets.bind($('#devices'), {devices: devices});
@@ -69,32 +65,28 @@ $( document ).ready(function() {
     });
 
     // Handle messages sent by the server.
-    socket.onmessage = function(event) {
-        var message = JSON.parse(event.data);
-        if (message.type === 'event') {
-            var num = message.data.value;
-            var point = {x: new Date().getTime(), y: parseFloat(num)};
-            device_map[message.data.device].addPoint(message.data.sensor, point);
-            hchart.redraw();
-        };
-        if (message.type === 'settable') {
-            device_map[message.data.device].addSettable(message.data.group,
-                                                        message.data.parameter,
-                                                        message.data.value);
-        };
-        if (message.type === 'groups') {
-            var num_device_ids = message.data.length;
-            for (var i=0; i < num_device_ids; i++) {
-                device_id = message.data[i];
-                if (device_map[device_id] === undefined) {
-                    device = new Device(device_id, socket, hchart);
-                    device_map[device_id] = device;
-                    devices.push(device);
-                }
+    socket.setHandler('event', function(message) {
+        var num = message.data.value;
+        var point = {x: new Date().getTime(), y: parseFloat(num)};
+        device_map[message.data.device].addPoint(message.data.sensor, point);
+        hchart.redraw();
+    });
+    socket.setHandler('settable', function(message) {
+        device_map[message.data.device].addSettable(message.data.group,
+                                                    message.data.parameter,
+                                                    message.data.value);
+    });
+    socket.setHandler('groups', function(message) {
+        var num_device_ids = message.data.length;
+        for (var i=0; i < num_device_ids; i++) {
+            device_id = message.data[i];
+            if (device_map[device_id] === undefined) {
+                device = new Device(device_id, socket, hchart);
+                device_map[device_id] = device;
+                devices.push(device);
             }
-        };
-
-    }
+        }
+    });
 
 })});
 
@@ -110,11 +102,7 @@ function Device(id, socket, chart) {
     this.settable_map = {}
 
     this.enable_changed = function() {
-        var repr = {
-            "id": id,
-            "enabled": device.enabled,
-        };
-        socket.send(JSON.stringify({"type": "membership", "data": [repr]}));
+        socket.group_membership(id, device.enabled);
     };
 
     this.addPoint = function(sensor_id, point) {
@@ -178,4 +166,57 @@ function Settable(device, group, parameter, socket, chart) {
                                     "parameter": settable.parameter,
                                     "value": val}));
     }
+}
+
+function WSWrapper(URL) {
+    var wsw = this;
+    this.url = URL;
+    this.sock = undefined;
+    this.handlers = {};
+    this.groups = {};
+
+    this.send = function(data) {
+        wsw.sock.send(data);
+    }
+
+    this.connect = function() {
+        wsw.sock = new WebSocket(URL);
+        wsw.sock.onopen = function(event) {
+          console.log("Open!");
+          for (device_id in wsw.groups) {
+              wsw.send_group_membership(device_id, wsw.groups[device_id])
+          }
+        }
+        wsw.sock.onclose = function(event) {
+          console.log("Close :(");
+          window.setTimeout(wsw.connect, 1000);
+        }
+        wsw.sock.onmessage = function(event) {
+            var message = JSON.parse(event.data);
+            var type = message.type;
+            var handler = wsw.handlers[type];
+            if (handler === undefined) {
+                console.log("No handler for ", type);
+            } else {
+                handler(message);
+            }
+        }
+
+    }
+
+    this.group_membership = function(device_id, enabled) {
+        wsw.groups[device_id] = enabled;
+        wsw.send_group_membership(device_id, enabled);
+    }
+
+    this.send_group_membership = function(device_id, enabled) {
+        var repr = [{"id": device_id, "enabled": enabled}];
+        wsw.sock.send(JSON.stringify({"type": "membership", "data": repr}));
+    }
+
+    this.setHandler = function(type, handler) {
+        wsw.handlers[type] = handler;
+    }
+
+    this.connect();
 }
