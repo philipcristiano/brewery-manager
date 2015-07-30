@@ -16,14 +16,6 @@ init({tcp, http}, _Req, _Opts) ->
     % join_all(),
 	{upgrade, protocol, cowboy_websocket}.
 
-join([]) ->
-    ok;
-join([{bm_devices, Name}|T]) ->
-    pg2:join({bm_devices, Name}, self()),
-    join(T);
-join([_H|T]) ->
-    join(T).
-
 join_once(Group) ->
     io:format("Join: ~p~n", [Group]),
 
@@ -36,7 +28,6 @@ join_once(Group) ->
 sync_membership([]) ->
     ok;
 sync_membership([Group | Groups]) ->
-    join([]),
     Name = {bm_devices, proplists:get_value(<<"id">>, Group)},
     Selected = proplists:get_value(<<"enabled">>, Group, false),
     ok = case Selected of
