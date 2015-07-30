@@ -5,4 +5,4 @@ otp_release:
 
 sudo: false
 
-script: "make app tests dialyze"
+script: "make deps app tests dialyze"
