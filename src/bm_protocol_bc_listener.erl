@@ -12,7 +12,7 @@
 
 -behaviour(gen_server).
 
--compile({parse_transform, lager_transform}).
+-compile([{parse_transform, lager_transform}]).
 
 %% API
 -export([start_link/0]).
