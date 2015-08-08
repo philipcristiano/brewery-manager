@@ -15,7 +15,7 @@ publish_temperature(ID, Temp) ->
     send(pipe, Pids, temperature, {ID, T}).
 
 publish_temperature(Device, Sensor, TS, Temp) ->
-    lager:debug("Publishing temperature ~p~n", [{Device, Sensor, TS, Temp}]),
+    _ = lager:debug("Publishing temperature ~p~n", [{Device, Sensor, TS, Temp}]),
     T = etsdb_numbers:to_float(Temp),
     Topic = {bm_devices, Device},
     pg2:create(Topic),
@@ -29,7 +29,7 @@ publish_temperature(Device, Sensor, TS, Temp) ->
     send(pipe, Pids, temperature, Data).
 
 settable_parameter(From, Device, Group, Parameter, Value) ->
-    lager:debug("Publishing settable ~p~n", [{Device, Group, Parameter, Value}]),
+    _ = lager:debug("Publishing settable ~p~n", [{Device, Group, Parameter, Value}]),
     Topic = {bm_devices, Device},
     pg2:create(Topic),
     Pids = pg2:get_members(Topic),

@@ -50,11 +50,12 @@ websocket_handle({text, String}, Req, State) ->
     io:format("Message: ~p~n", [String]),
     Data = jsx:decode(String),
     io:format("Data: ~p~n", [Data]),
-    handle_client_msg(proplists:get_value(<<"type">>, Data, unknown), Data, State),
+    ok = handle_client_msg(proplists:get_value(<<"type">>, Data, unknown), Data, State),
 	{ok, Req, State}.
 
 handle_client_msg(unknown, Data, _State) ->
-    lager:debug("Unknown client command: ~p~n", Data);
+    _ = lager:debug("Unknown client command: ~p~n", Data),
+    ok;
 handle_client_msg(<<"set">>, Data, _State=#state{device_pids=Pids}) ->
     Device = proplists:get_value(<<"device">>, Data),
     Pid = proplists:get_value(Device, Pids),
@@ -63,30 +64,32 @@ handle_client_msg(<<"set">>, Data, _State=#state{device_pids=Pids}) ->
     Param = proplists:get_value(<<"parameter">>, Data),
     Value = proplists:get_value(<<"value">>, Data),
 
-    lager:debug("Setting settable: ~p~n", [Data]),
-    bm_tcp_protocol:set_settable(Pid, Device, Group, Param, Value);
+    _ = lager:debug("Setting settable: ~p~n", [Data]),
+    bm_tcp_protocol:set_settable(Pid, Device, Group, Param, Value),
+    ok;
 handle_client_msg(<<"membership">>, Data, _State) ->
-    lager:debug("Syncing membership: ~p~n", Data),
+    _ = lager:debug("Syncing membership: ~p~n", Data),
     sync_membership(proplists:get_value(<<"data">>, Data)),
     ok;
 handle_client_msg(Type, Data, _State) ->
-    lager:debug("Unknown client command: ~p~p~n", [Type, Data]).
+    _ = lager:debug("Unknown client command: ~p~p~n", [Type, Data]),
+    ok.
 
 %% Handle messages from VM
 websocket_info(send_groups, Req, State) ->
     Groups = pg2:which_groups(),
-    lager:debug("Found groups: ~p~n", [Groups]),
+    _ = lager:debug("Found groups: ~p~n", [Groups]),
     Msg = [{type, groups}, {data, pg_groups_to_json(Groups)}],
-    lager:debug("Encoding message: ~p~n", [Msg]),
+    _ = lager:debug("Encoding message: ~p~n", [Msg]),
     {ok, _} = timer:send_after(5000, send_groups),
     {reply, {text, jsx:encode(Msg)}, Req, State};
 websocket_info({pipe, Pipe, {_Key, Msg}}, Req, State) ->
     Send = [{type, event}, {pipe, [Pipe]}, {data, Msg}],
-    lager:debug("Sending: ~p~n", [Send]),
+    _ = lager:debug("Sending: ~p~n", [Send]),
     {reply, {text, jsx:encode(Send)}, Req, State};
 websocket_info({pipe, Pipe, Data}, Req, State) ->
     Send = [{type, event}, {pipe, [Pipe]}, {data, Data}],
-    lager:debug("Sending: ~p~n", [Data]),
+    _ = lager:debug("Sending: ~p~n", [Data]),
     {reply, {text, jsx:encode(Send)}, Req, State};
 websocket_info({settable, Name, {From, Msg}}, Req, State=#state{device_pids=Pids}) ->
     Device = proplists:get_value(<<"device">>, Msg),
@@ -96,15 +99,15 @@ websocket_info({settable, Name, {From, Msg}}, Req, State=#state{device_pids=Pids
                 _ -> Pids
     end,
     Send = [{type, settable}, {pipe, [Name]}, {data, Msg}],
-    lager:debug("Sending: ~p~n", [Msg]),
+    _ = lager:debug("Sending: ~p~n", [Msg]),
     {reply, {text, jsx:encode(Send)}, Req, State#state{device_pids=Pids2}};
 websocket_info({'DOWN', _MonitorRef, process, Pid, _Info}, Req, State=#state{device_pids=Pids}) ->
-    lager:debug("Monitor down pids ~p~n", [Pids]),
+    _ = lager:debug("Monitor down pids ~p~n", [Pids]),
     NewPids = delete_by_value(Pid, Pids),
-    lager:debug("Monitor down new pids ~p~n", [NewPids]),
+    _ = lager:debug("Monitor down new pids ~p~n", [NewPids]),
 	{ok, Req, State#state{device_pids=NewPids}};
 websocket_info(Info, Req, State) ->
-    lager:info("Websocket unhandled message: ~p~n", [Info]),
+    _ = lager:info("Websocket unhandled message: ~p~n", [Info]),
 	{ok, Req, State}.
 
 websocket_terminate(_Reason, _Req, _State) ->

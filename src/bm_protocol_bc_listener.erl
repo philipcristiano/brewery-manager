@@ -57,10 +57,10 @@ start_link() ->
 %% @end
 %%--------------------------------------------------------------------
 init([]) ->
-    lager:info("start udp listener"),
+    _ = lager:info("start udp listener"),
     {ok, Sock} = gen_udp:open(8989, [binary, {active, true}]),
 
-    lager:info("udp listener started"),
+    _ = lager:info("udp listener started"),
     %ok = gen_tcp:close(Sock),
     {ok, #state{socket=Sock}}.
 
@@ -106,7 +106,7 @@ handle_cast(_Msg, State) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_info({udp, _Port, IP, _FromPort, _Msg}, State) ->
-    lager:info("I am connecting to ~p~n", [IP]),
+    _ = lager:info("I am connecting to ~p~n", [IP]),
     Spec = {{device, IP},
               {bm_protocol_v1, start_link, [IP, 23]},
                temporary, 5000, worker, [bm_protocol_v1]},
@@ -114,10 +114,10 @@ handle_info({udp, _Port, IP, _FromPort, _Msg}, State) ->
         {ok, P} -> {ok, P};
         {error, {already_started, P}} -> {ok, P}
     end,
-    lager:info(" Should start...\n"),
+    _ = lager:info(" Should start...\n"),
     {noreply, State};
 handle_info(Info, State) ->
-    lager:info("info ~p~n", [Info]),
+    _ = lager:info("info ~p~n", [Info]),
     {noreply, State}.
 
 %%--------------------------------------------------------------------
