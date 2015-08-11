@@ -68,7 +68,7 @@ handle_client_msg(<<"set">>, Data, _State=#state{device_pids=Pids}) ->
     bm_tcp_protocol:set_settable(Pid, Device, Group, Param, Value),
     ok;
 handle_client_msg(<<"membership">>, Data, _State) ->
-    _ = lager:debug("Syncing membership: ~p~n", Data),
+    _ = lager:debug("Syncing membership: ~p~n", [Data]),
     sync_membership(proplists:get_value(<<"data">>, Data)),
     ok;
 handle_client_msg(Type, Data, _State) ->
