@@ -11,7 +11,7 @@ PLT_APPS = ranch
 DEPS = leveltsdb lager cowboy jsx erlydtl
 dep_leveltsdb = git https://github.com/philipcristiano/leveltsdb.git 0.1.4
 dep_cowboy = git https://github.com/ninenines/cowboy 1.0.2
-dep_jsx = git https://github.com/talentdeficit/jsx.git v2.1.1
+dep_jsx = git https://github.com/talentdeficit/jsx.git v2.7.0
 dep_erlydtl = git https://github.com/erlydtl/erlydtl.git 0.10.0
 dep_lager = git https://github.com/basho/lager.git 3.0.1
 
