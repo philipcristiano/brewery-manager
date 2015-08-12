@@ -2,34 +2,29 @@
 
 -compile([{parse_transform, lager_transform}]).
 
--export([publish_temperature/2,
-         publish_temperature/4,
+-export([publish_temperature/4,
          settable_parameter/5]).
 
 
-publish_temperature(ID, Temp) ->
-    T = etsdb_numbers:to_float(Temp),
-    Topic = {bm_devices, ID},
-    pg2:create(Topic),
-    Pids = pg2:get_members(Topic),
-    send(pipe, Pids, temperature, {ID, T}).
+-spec publish_temperature(binary(), binary(), integer(), number()) -> ok.
 
 publish_temperature(Device, Sensor, TS, Temp) ->
-    lager:debug("Publishing temperature ~p~n", [{Device, Sensor, TS, Temp}]),
-    T = etsdb_numbers:to_float(Temp),
+    _ = lager:debug("Publishing temperature ~p~n", [{Device, Sensor, TS, Temp}]),
     Topic = {bm_devices, Device},
     pg2:create(Topic),
     Pids = pg2:get_members(Topic),
 
     Data = [{<<"device">>, Device},
             {<<"sensor">>, Sensor},
-            {<<"value">>, T},
+            {<<"value">>, Temp},
             {<<"timestamp">>, TS}],
 
     send(pipe, Pids, temperature, Data).
 
+-spec settable_parameter(pid(), binary(), binary(), binary(), binary()) -> ok.
+
 settable_parameter(From, Device, Group, Parameter, Value) ->
-    lager:debug("Publishing settable ~p~n", [{Device, Group, Parameter, Value}]),
+    _ = lager:debug("Publishing settable ~p~n", [{Device, Group, Parameter, Value}]),
     Topic = {bm_devices, Device},
     pg2:create(Topic),
     Pids = pg2:get_members(Topic),

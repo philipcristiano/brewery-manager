@@ -2,6 +2,9 @@
 
 -export([to_float/1]).
 
+
+-spec to_float(any()) -> float().
+
 to_float(X) when is_list(X)->
     case string:to_float(X) of
         {error, no_float} -> erlang:float(erlang:list_to_integer(X));
