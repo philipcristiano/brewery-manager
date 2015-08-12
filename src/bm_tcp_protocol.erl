@@ -77,7 +77,8 @@ handle_message(<<"device">>, [DeviceID], State) ->
 handle_message(<<"temperature (c)">>, [Sensor, Value], State=#state{device=Device}) ->
     _ = lager:debug("Temp State: ~p~n", [State]),
     Now = get_timestamp(),
-    bm_publish_metrics:publish_temperature(Device, Sensor, Now, Value),
+    FloatValue = etsdb_numbers:to_float(Value),
+    bm_publish_metrics:publish_temperature(Device, Sensor, Now, FloatValue),
     {ok, State};
 handle_message(<<"settable">>, [Group, Parameter, Value], State=#state{device=Device}) ->
     _ = lager:debug("settable State: ~p~n", [State]),

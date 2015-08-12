@@ -6,18 +6,17 @@
          settable_parameter/5]).
 
 
--spec publish_temperature(binary(), binary(), integer(), binary()) -> ok.
+-spec publish_temperature(binary(), binary(), integer(), number()) -> ok.
 
 publish_temperature(Device, Sensor, TS, Temp) ->
     _ = lager:debug("Publishing temperature ~p~n", [{Device, Sensor, TS, Temp}]),
-    T = etsdb_numbers:to_float(Temp),
     Topic = {bm_devices, Device},
     pg2:create(Topic),
     Pids = pg2:get_members(Topic),
 
     Data = [{<<"device">>, Device},
             {<<"sensor">>, Sensor},
-            {<<"value">>, T},
+            {<<"value">>, Temp},
             {<<"timestamp">>, TS}],
 
     send(pipe, Pids, temperature, Data).
