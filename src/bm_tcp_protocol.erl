@@ -84,6 +84,10 @@ handle_message(<<"settable">>, [Group, Parameter, Value], State=#state{device=De
     _ = lager:debug("settable State: ~p~n", [State]),
     bm_publish_metrics:settable_parameter(self(), Device, Group, Parameter, Value),
     {ok, State};
+handle_message(<<"pid pwm">>, [Pid, Value], State=#state{device=Device}) ->
+    _ = lager:debug("settable State: ~p~n", [State]),
+    bm_publish_metrics:settable_parameter(self(), Device, <<"Pid">>, Pid, Value),
+    {ok, State};
 handle_message(Unknown, Data, State) ->
     _ = lager:info("TCP protocol receiving unknown message ~p, ~p ~n", [Unknown, Data]),
     {ok, State}.
