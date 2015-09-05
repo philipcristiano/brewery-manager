@@ -1,0 +1,7 @@
+PKG=brewery-manager
+NAME=Brewering Manager application for controlling brew devices
+ARCH=64
+VERSION=release 0.0
+CATEGORY=application
+BASEDIR=/opt
+
