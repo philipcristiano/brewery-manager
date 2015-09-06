@@ -23,11 +23,11 @@ $( document ).ready(function() {
                 text: '1m'
             }, {
                 type: 'minute',
-                count: 3,
+                count: 5,
                 text: '5m'
             }, {
                 type: 'minute',
-                count: 6,
+                count: 15,
                 text: '15m'
             }, {
                 type: 'minute',
