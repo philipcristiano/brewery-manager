@@ -28,7 +28,7 @@ ips_package: release
 	cd _rel; pkgproto * > prototype
 	cp omnios-build/pkginfo _rel/
 	cd _rel; echo "i pkginfo=pkginfo" > prototype
-	cd _rel; pkgmk -r . -d .
+	cd _rel; pkgmk -r . -d . -o
 
 
 include erlang.mk
