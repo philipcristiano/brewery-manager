@@ -25,6 +25,7 @@ package: release
 	fpm -s dir -t deb -n iot-bm -v 0.1.0 _rel/bm=/opt/ rel/init=/etc/init.d/iot-bm
 
 ips_package: release
+	cp omnios-build/pkginfo _rel/
 	pushd _rel/
 	echo "i pkginfo=pkginfo" > prototype
 	pkgproto * >> prototype
