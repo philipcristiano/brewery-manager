@@ -21,10 +21,10 @@ dep_lager = git https://github.com/basho/lager.git 3.0.1
 release: clean app
 	./relx release
 
-package: release
+package: app rel
 	fpm -s dir -t deb -n iot-bm -v 0.1.0 _rel/bm=/opt/ rel/init=/etc/init.d/iot-bm
 
-ips_package: release
+ips_package: app rel
 	cd _rel; pkgproto * > prototype
 	cp omnios-build/pkginfo _rel/
 	cd _rel; echo "i pkginfo=pkginfo" > prototype
