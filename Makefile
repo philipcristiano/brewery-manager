@@ -47,7 +47,7 @@ ips_package: app rel
 	# Combine file and metadata
 	pkgmogrify omnios-build/pkg.pm5.1 omnios-build/pkg.mog | pkgfmt > omnios-build/pkg.pm5.2
 	# Lint package
-	pkglint -c omnios-build/cache omnios-build/pkg.pm5.2
+	pkglint omnios-build/pkg.pm5.2
 
 
 include erlang.mk
