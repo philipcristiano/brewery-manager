@@ -24,11 +24,12 @@ release: clean app
 package: app rel
 	fpm -s dir -t deb -n iot-bm -v 0.1.0 _rel/bm=/opt/ rel/init=/etc/init.d/iot-bm
 
+export IPS_FMRI=server/${PROJECT}@${PKG_VERSION}
+export IPS_DESCRIPTION="Brewery Manager"
+export IPS_SUMMARAY="${IPS_DESCRIPTION}"
+
 ips_package: app rel
-	cd _rel; pkgproto * > prototype
-	cp omnios-build/pkginfo _rel/
-	cd _rel; echo "i pkginfo=pkginfo" > prototype
-	cd _rel; pkgmk -r . -d . -o
+	./omnios-build/generate_pkg_mog.sh
 
 
 include erlang.mk
