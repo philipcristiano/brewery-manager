@@ -30,6 +30,7 @@ export IPS_SUMMARAY="${IPS_DESCRIPTION}"
 
 ips_package: app rel
 	./omnios-build/generate_pkg_mog.sh
+	pkgsend generate _rel/${PROJECT} | pkgfmt > omnios-build/pkg.pm5.1
 
 
 include erlang.mk
