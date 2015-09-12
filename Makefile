@@ -24,7 +24,7 @@ release: clean app
 package: app rel
 	fpm -s dir -t deb -n iot-bm -v 0.1.0 _rel/bm=/opt/ rel/init=/etc/init.d/iot-bm
 
-export IPS_FMRI=server/${PROJECT}@${shell git describe --tags --abbrev=0}
+export IPS_FMRI=server/${PROJECT}@${shell git describe --tags --abbrev=0}.`TZ=UTC date +"%Y%m%d.%H%M%S"`
 export IPS_DESCRIPTION="Brewery Manager"
 export IPS_SUMMARAY=${IPS_DESCRIPTION}
 PKG_VERSION	?= $(shell git describe --tags | tr - .)
