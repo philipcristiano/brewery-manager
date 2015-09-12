@@ -24,13 +24,29 @@ release: clean app
 package: app rel
 	fpm -s dir -t deb -n iot-bm -v 0.1.0 _rel/bm=/opt/ rel/init=/etc/init.d/iot-bm
 
-export IPS_FMRI=server/${PROJECT}@${PKG_VERSION}
+export IPS_FMRI=server/${PROJECT}@${shell git describe --tags --abbrev=0}
 export IPS_DESCRIPTION="Brewery Manager"
-export IPS_SUMMARAY="${IPS_DESCRIPTION}"
+export IPS_SUMMARAY=${IPS_DESCRIPTION}
+PKG_VERSION	?= $(shell git describe --tags | tr - .)
+ARCH=$(shell uname -p)
+
+define IPS_METADATA
+set name=pkg.fmri value=${IPS_FMRI}
+set name=pkg.description value=${IPS_DESCRIPTION}
+set name=pkg.summary value=${IPS_SUMMARAY}
+set name=variant.arch value=${ARCH}
+endef
+export IPS_METADATA
 
 ips_package: app rel
-	./omnios-build/generate_pkg_mog.sh
+	# Create metadata
+	echo "${IPS_METADATA}" >> omnios-build/pkg.mog
+	# Get file data for the release
 	pkgsend generate _rel/${PROJECT} | pkgfmt > omnios-build/pkg.pm5.1
+	# Combine file and metadata
+	pkgmogrify omnios-build/pkg.pm5.1 omnios-build/pkg.mog | pkgfmt > omnios-build/pkg.pm5.2
+	# Lint package
+	pkglint -c omnios-build/cache omnios-build/pkg.pm5.2
 
 
 include erlang.mk
