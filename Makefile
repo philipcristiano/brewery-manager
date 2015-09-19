@@ -42,6 +42,7 @@ endef
 export IPS_METADATA
 
 BUILD_DIR=omnios-build/root
+BUILD_TMP?=omnios-build
 
 ips_package: app rel
 	# Create metadata
@@ -51,6 +52,8 @@ ips_package: app rel
 	mkdir -p ${BUILD_DIR}
 
 	cp -r _rel/${PROJECT} ${BUILD_DIR}/opt
+
+	echo "<transform dir path=(etc|opt)$ -> drop>" > ${BUILD_TMP}/transform.mog
 
 	# Get file data for the release
 	pkgsend generate ${BUILD_DIR} | pkgfmt > omnios-build/pkg.pm5.1
