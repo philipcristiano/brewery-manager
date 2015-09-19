@@ -56,8 +56,16 @@ ips_package: app rel
 	pkgsend generate ${BUILD_DIR} | pkgfmt > omnios-build/pkg.pm5.1
 	# Combine file and metadata
 	pkgmogrify omnios-build/pkg.pm5.1 omnios-build/pkg.mog omnios-build/transform.mog | pkgfmt > omnios-build/pkg.pm5.2
+	cp omnios-build/pkg.pm5.2 omnios-build/pkg.pm5.final
 	# Lint package
-	pkglint omnios-build/pkg.pm5.2
+	pkglint omnios-build/pkg.pm5.final
+
+ips_publish: ips_package
+ifndef PKGSRVR
+	echo "Need to define PKGSRVR, something like http://localhost:10000"
+	exit 1
+endif
+	pkgsend publish -s ${PKGSRVR} -d ${BUILD_DIR} omnios-build/pkg.pm5.final
 
 
 include erlang.mk
