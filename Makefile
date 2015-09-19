@@ -39,13 +39,21 @@ set name=variant.arch value=${ARCH}
 endef
 export IPS_METADATA
 
+BUILD_DIR=omnios-build/root
+
 ips_package: app rel
 	# Create metadata
 	echo "$$IPS_METADATA" > omnios-build/pkg.mog
+
+	rm -rf ${BUILD_DIR}
+	mkdir -p ${BUILD_DIR}
+
+	cp -r _rel/${PROJECT} ${BUILD_DIR}
+
 	# Get file data for the release
-	pkgsend generate _rel/${PROJECT} | pkgfmt > omnios-build/pkg.pm5.1
+	pkgsend generate ${BUILD_DIR} | pkgfmt > omnios-build/pkg.pm5.1
 	# Combine file and metadata
-	pkgmogrify omnios-build/pkg.pm5.1 omnios-build/pkg.mog | pkgfmt > omnios-build/pkg.pm5.2
+	pkgmogrify omnios-build/pkg.pm5.1 omnios-build/pkg.mog omnios-build/transform.mog | pkgfmt > omnios-build/pkg.pm5.2
 	# Lint package
 	pkglint omnios-build/pkg.pm5.2
 
