@@ -2,9 +2,11 @@ PROJECT = bm
 
 PKG_REVISION ?= $(shell git describe --tags)
 PKG_VERSION	?= $(shell git describe --tags | tr - .)
+UNAME ?=$(shell uname)
 ELEVELDB_VERSION = "1.1.0"
 export ELEVELDB_VERSION
 
+RELX_OPTS = --overlay_vars=rel/overlay_vars/${UNAME}.config
 SHELL_OPTS = -eval "application:ensure_all_started(bm)" -config bm
 PLT_APPS = ranch
 
