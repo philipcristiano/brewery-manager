@@ -49,7 +49,7 @@ ips_package: app rel
 	echo "$$IPS_METADATA" > ${BUILD_TMP}/pkg.mog
 
 	rm -rf ${BUILD_DIR}
-	mkdir -p ${BUILD_DIR}
+	mkdir -p ${BUILD_DIR}/opt
 
 	cp -r _rel/${PROJECT} ${BUILD_DIR}/opt
 
