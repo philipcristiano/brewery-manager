@@ -50,7 +50,7 @@ ips_package: app rel
 	rm -rf ${BUILD_DIR}
 	mkdir -p ${BUILD_DIR}
 
-	cp -r _rel/${PROJECT} ${BUILD_DIR}
+	cp -r _rel/${PROJECT} ${BUILD_DIR}/opt
 
 	# Get file data for the release
 	pkgsend generate ${BUILD_DIR} | pkgfmt > omnios-build/pkg.pm5.1
