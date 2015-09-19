@@ -41,12 +41,12 @@ set name=variant.arch value=${ARCH}
 endef
 export IPS_METADATA
 
-BUILD_DIR=omnios-build/root
 BUILD_TMP?=omnios-build
+BUILD_DIR?=omnios-build/root
 
 ips_package: app rel
 	# Create metadata
-	echo "$$IPS_METADATA" > omnios-build/pkg.mog
+	echo "$$IPS_METADATA" > ${BUILD_TMP}/pkg.mog
 
 	rm -rf ${BUILD_DIR}
 	mkdir -p ${BUILD_DIR}
@@ -56,19 +56,19 @@ ips_package: app rel
 	echo "<transform dir path=(etc|opt)$ -> drop>" > ${BUILD_TMP}/transform.mog
 
 	# Get file data for the release
-	pkgsend generate ${BUILD_DIR} | pkgfmt > omnios-build/pkg.pm5.1
+	pkgsend generate ${BUILD_DIR} | pkgfmt > ${BUILD_TMP}/pkg.pm5.1
 	# Combine file and metadata
-	pkgmogrify omnios-build/pkg.pm5.1 omnios-build/pkg.mog omnios-build/transform.mog | pkgfmt > omnios-build/pkg.pm5.2
-	cp omnios-build/pkg.pm5.2 omnios-build/pkg.pm5.final
+	pkgmogrify ${BUILD_TMP}/pkg.pm5.1 ${BUILD_TMP}/pkg.mog ${BUILD_TMP}/transform.mog | pkgfmt > ${BUILD_TMP}/pkg.pm5.2
+	cp ${BUILD_TMP}/pkg.pm5.2 ${BUILD_TMP}/pkg.pm5.final
 	# Lint package
-	pkglint omnios-build/pkg.pm5.final
+	pkglint ${BUILD_TMP}/pkg.pm5.final
 
 ips_publish: ips_package
 ifndef PKGSRVR
 	echo "Need to define PKGSRVR, something like http://localhost:10000"
 	exit 1
 endif
-	pkgsend publish -s ${PKGSRVR} -d ${BUILD_DIR} omnios-build/pkg.pm5.final
+	pkgsend publish -s ${PKGSRVR} -d ${BUILD_DIR} ${BUILD_TMP}/pkg.pm5.final
 
 
 include erlang.mk
